@@ -1,5 +1,6 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+
+import React, { useState } from 'react';
 import { Provider } from 'react-redux';
 import { store } from '../store/store';
 import dynamic from 'next/dynamic';
@@ -10,6 +11,7 @@ const WeatherData = dynamic(() => import('../components/weather/WeatherData'), {
 export default function Home() {
   const [city, setCity] = useState('');
   const [weatherData, setWeatherData] = useState<any>(null);
+  const [isFormVisible, setIsFormVisible] = useState(false); // State for form visibility
 
   const fetchWeatherData = async (cityName: string) => {
     try {
@@ -30,38 +32,46 @@ export default function Home() {
     }
   };
 
-  useEffect(() => {
-    if (city.trim()) {
-      const intervalId = setInterval(() => {
-        fetchWeatherData(city);
-      }, 60000); // Update every 5 seconds
-
-      return () => clearInterval(intervalId); // Cleanup interval on component unmount
-    }
-  }, [city]);
+  const toggleFormVisibility = () => {
+    setIsFormVisible(!isFormVisible);
+  };
 
   return (
     <Provider store={store}>
       <div className="flex flex-col items-center justify-center min-h-screen p-4">
         <h1 className="text-2xl font-bold mb-8">Dashboard</h1>
-        <form onSubmit={handleCitySubmit} className="mb-4">
-          <input
-            type="text"
-            value={city}
-            onChange={(e) => setCity(e.target.value)}
-            placeholder="Enter city name"
-            className="px-4 py-2 mr-2 text-black rounded-lg"
-          />
-          <button
-            type="submit"
-            className="px-4 py-2 text-white bg-blue-500 rounded-lg hover:bg-blue-600"
-          >
-            Get Weather
-          </button>
-        </form>
-        {weatherData && (
-          <div className="flex items-center justify-center w-full">
-            <WeatherData city={city} weatherData={weatherData}/>
+        
+        {/* Button to toggle form visibility */}
+        <button
+          onClick={toggleFormVisibility}
+          className="px-4 py-2 mb-4 text-white bg-blue-500 rounded-lg hover:bg-blue-600"
+        >
+          {isFormVisible ? 'No Weather' : 'Show Weather?'}
+        </button>
+
+        {/* Conditionally render the form */}
+        {isFormVisible && (
+          <div>
+            <form onSubmit={handleCitySubmit} className="mb-4">
+              <input
+                type="text"
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                placeholder="Enter city name"
+                className="px-4 py-2 mr-2 text-black rounded-lg"
+              />
+              <button
+                type="submit"
+                className="px-4 py-2 text-white bg-blue-500 rounded-lg hover:bg-blue-600"
+              >
+                Let's Go!
+              </button>
+            </form>
+            {weatherData && (
+              <div className="flex items-center justify-center w-full">
+                <WeatherData city={city} weatherData={weatherData} />
+              </div>
+            )}
           </div>
         )}
       </div>
